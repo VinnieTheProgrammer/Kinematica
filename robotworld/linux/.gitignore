@@ -1,0 +1,13 @@
+/src/
+/.deps/
+/config.log
+/config.status
+/libtool
+/Makefile
+/compile_commands.json
+/Doxyfile
+/clang-tidy-result.txt
+/clang-tidy.html
+/cppcheck-result.html
+/cppcheck-result.xml
+/clang.log

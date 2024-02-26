@@ -1,0 +1,125 @@
+// Doxygen thinks that a dox-file is a C++-source file and the Makefile does not.
+// So we can use a dox-file to contain the main page (@see https://www.doxygen.nl/manual/commands.html#cmdmainpage)
+// Doxygen compiles the file but the compiler does not...
+
+/**
+@mainpage RobotWorld documentation
+
+This is the not-finished attempt to document the features of RobotWorld. In this case features are things
+that should work, not things that do not work \emoji :smile.   
+
+@section  GUI-programming GUI programming
+
+RobotWorld shows how to use several widgets in wxWidgets and how they work together with widget event handling
+functions:
+- Button
+- Checkbox
+- Menus
+- RadioBox
+
+Most of these examples are also available in the wxWidgets examples. Compile and run the examples of wxWidgets 
+for more information/examples. 
+  
+@section Popup-menus Popup menus
+
+If one clicks with the right mouse button on the world canvas or any of it's inhabitants a popup menu will appear.
+The menu items are rather self explanatory. There is 1 feature that may make your life easier. You can create a world
+by adding robots, walls, waypoints and goals by using the popup menu. When you are done you can generate the code
+that is needed to build the world in code. It will appear in the log window and you can copy and paste it into your
+own code. This feature is experimental and has had little testing. Any input is welcome.      
+
+@section Argument-handling Argument handling
+
+RobotWorld has an argument handling mechanism. The class Application::MainApplication 
+a list of the arguments given to the application. See Application::MainApplication::setCommandlineArguments
+for more information on how the arguments are added to the list.
+
+A list of arguments that are currently used in RobotWorld:
+<ul>
+<li> *-worldname=a_world_name* :\n 	Used as a namespace when generating unique Base::ObjectId in a 
+									distributed application (NOT properly implemented (yet))  
+<li> *-local_port=xxxxx* :\n 	The local port used by a Messaging::Server to listen. 
+								Defaults to 12345 when not set.
+<li> *-remote_ip=aaa.bbb.ccc.ddd* :\n	The remote IP-address of a Messaging::Server that is used by a 
+										Messaging::Client to connect to.
+<li> *-remote_port=xxxxx* :\n	The remote port of a Messaging::Server that is used by a Messaging::Client 
+								to connect to. Defaults to 12345 when not set.
+<li> *-debug_grid (boolean)* :\n	Used in Application::MainFrameWindow to debug wxSizers problems. 
+									It paints the grids so one can see in which cell a widgets is positioned.
+</ul>
+
+@section RPC-mechanism RPC-mechanism
+
+The PRC mechanism of RobotWorld is exactly the same as the "cssampleboost" example given in the OSM Software course. The mechanism 
+implements a basic Remote Procedure Call (RPC) mechanism: a client sends a requests to a server, the server executes the request and 
+sends a response back to the client. The client than handles the response.
+
+The basic high-level flow is as follows:
+1. A Messaging::Server is started somewhere. This server has a Messaging::RequestHandler attached. 
+   The responsibility of the RequestHandler is to handle any incoming request messages
+   and to provide for outgoing messages (responses).
+2. A Messaging::Client is started somewhere. This server has a Messaging::ResponseHandler attached. 
+   The responsibility of the ResponseHandler is to handle the response messages.
+3. On the client side a Messaging::Message is created with a specific message type and message body (message type specific payload).
+4. The client dispatches the message in two steps. First, it sends a fixed size header which contains among other things the message type 
+   and the size of the message body. Second, it sends the payload. This is done a-sync using callback functions, i.e. after sending 
+   the header a callback function is called that sends the message body.
+5. On the server the message is read in two steps, first the header and than the message body.
+6. The server sends the request to its handler. The handler handles the request and provides an appropriate response.
+7. Analogous to step 4 the server sends the response.
+8. Analogous to step 5 the client receives the response.
+9. The client sends the response to its handler. The handler handles the response as appropriate.
+
+Messaging::Server::handleAccept and Messaging::Client::dispatchMessage both contain plantUML that gives a full sequence diagram of what the server and client
+do during an RPC-call.
+
+The stand-alone version of RobotWorld implements a simple "Hello world!" RPC-call:
+- Populate the world with a robot and walls, using the button "Populate" and "Default world" selected. 
+- Click the button "Start listening". This will start a server that listens on localhost, port 12345. 
+- Click the button "Send Message". This will create a client that sends an echo request to the server.
+- The server receives the request and handles the request by echoing it to the client in Model::Robot::handleRequest. 
+- The client receives the response and handles it in Model::Robot::handleResponse.
+- Clicking the button "Stop listening" will stop the server listening.
+- The log window shows the trace of the server handling the request and the client handling the response.
+
+Note that the button "Stop listening" also results in an RPC-call.
+
+@section Background-thread-GUI-calls  Background thread GUI calls
+
+Most GUI frameworks do not allow that background threads call functions in the (foreground) GUI. wxWidgets is one of them:
+if on want a background thread to call a GUI function it has to be done by sending an event to some window in the GUI which
+handles the event by calling the appropriate function (see https://wiki.wxwidgets.org/Inter-Thread_and_Inter-Process_communication_
+fo the official wxWidgets documentation). In RobotWorld, if a background (communication) thread wants to signal a change
+to the View::RobotWorldCanvas, it calls View::RobotWorldCanvas::handleBackGroundNotification() which posts/sends a 
+Base::EVT_NOTIFICATIONEVENT to a Base::NotificationHandler (actually the View::RobotWorldCanvas itself) which handles
+the event. 
+
+@section Tracing-mechanism  Tracing-mechanism
+
+The tracing-mechanism consists of the class Base::Trace, several macros,an interface Base::ITraceFunction 
+and 3 implementing classes that implement the interface, Base::FileTraceFunction, Base::StdOutTraceFunction
+and Application::WidgetTraceFunction. They trace to a file, std::cout and a window the application. By default
+the trace is to the window (see Application::MainFrameWindow::initialise()). 
+ 
+
+Base::Trace provides the means to trace arbitrary text, with/without time stamps, line numbers and thread-ids. Runtime tracing can be turned on and off. There are 2
+trace destinations available: to std::cout and to a file. Base::StdOutTraceFunction traces to std::cout. By default Base::FileTraceFunction traces to file with the 
+name "trace.log". The stem and extension are configurable. If one needs retain multiple log-files one can add a time stamp to the filename to distinguish the files.
+
+Most of the time one will use macros for tracing. If -DDEVELOPMENT is defined for the preprocessor the macros are active, if not, they are compiled out. 
+For more information: see Trace.hpp. 
+
+TODO: find out how to include macros in the generated Doxygen. 
+
+@section LeakSanitizerSuppression LeakSanitizerSuppression.txt
+
+The file shows how to suppress false leaks. Make sure the compilation is done with "-fsanitize=leak."  See https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
+for more information. 
+
+@section Trivial_extensions Trivial extensions
+
+- Replace the single RequestHandler in the Server by a vector of RequestHandlers to allow for specialised RequestHandlers.
+  See https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern for more inspiration.
+   
+
+*/
