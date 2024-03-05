@@ -17,6 +17,7 @@
 
 #include "Lidar.hpp"
 #include "Compass.hpp"
+#include "Odometer.hpp"
 
 #include <chrono>
 #include <ctime>
@@ -55,6 +56,8 @@ namespace Model
 		//attachSensor( laserSensor);
 		std::shared_ptr< AbstractSensor > compass = std::make_shared<Compass>( *this);
 		attachSensor(compass);
+		std::shared_ptr< AbstractSensor > odometer = std::make_shared<Odometer>( *this);
+		attachSensor(odometer);
 		std::shared_ptr< AbstractSensor > lidarSensor = std::make_shared<Lidar>( *this);
 		attachSensor(lidarSensor);
 
@@ -489,6 +492,10 @@ namespace Model
 							AnglePercept* anglePercept = dynamic_cast<AnglePercept*>(percept.value().get());
 							currectCompassAngle = anglePercept->angle;
 							std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
+						} else if(typeid(tempAbstractPercept) == typeid(OdoPercept)) {
+							OdoPercept* odoPercept = dynamic_cast<OdoPercept*>(percept.value().get());
+							currectOdometerReading.push_back(odoPercept->point);
+							std::cout << "currentOdometerReading: " << odoPercept->point << std::endl;
 						}
 
 						else {

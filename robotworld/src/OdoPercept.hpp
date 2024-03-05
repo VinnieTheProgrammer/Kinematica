@@ -1,9 +1,8 @@
-#ifndef DISTANCEPERCEPT_HPP_
-#define DISTANCEPERCEPT_HPP_
+#ifndef ODOPERCEPT_H_
+#define ODOPERCEPT_H_
 
 #include "Config.hpp"
 
-#include "DistanceStimulus.hpp"
 #include "Point.hpp"
 
 #include <limits>
@@ -13,14 +12,14 @@ namespace Model
 	/**
 	 *
 	 */
-	class DistancePercept : public AbstractPercept
+	class OdoPercept : public AbstractPercept
 	{
 		public:
-			DistancePercept() = default;
+			OdoPercept() = default;
 			/**
 			 *
 			 */
-			explicit DistancePercept( const wxPoint& aPoint) :
+			explicit OdoPercept( const wxPoint& aPoint) :
 				point(aPoint)
 			{
 			}
@@ -34,7 +33,7 @@ namespace Model
 			 */
 			virtual std::string asString() const override
 			{
-				return "DistancePercept: " + std::to_string(point.x) + ", " + std::to_string(point.y);
+				return "OdoPercept: " + std::to_string(point.x) + ", " + std::to_string(point.y);
 			}
 			/**
 			 * Returns a description of the object with all data of the object usable for debugging
@@ -43,7 +42,7 @@ namespace Model
 			{
 				return asString();
 			}
-	}; //	class DistancePercept
+	};
 } // namespace Model
 
-#endif /* DISTANCEPERCEPT_HPP_ */
+#endif /* ODOPERCEPT_H_ */

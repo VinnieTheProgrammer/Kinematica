@@ -40,7 +40,8 @@ robotworld_SOURCES 	= 	AbstractActuator.cpp	\
 						WidgetTraceFunction.cpp	\
 						Widgets.cpp \
 						Lidar.cpp \
-						Compass.cpp						
+						Compass.cpp \
+						Odometer.cpp						
 
 robotworld_CPPFLAGS 	=	$(AM_CPPFLAGS) $(ROBOTWORLD_CPPFLAGS) $(WX_CPPFLAGS)
 

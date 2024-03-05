@@ -28,22 +28,37 @@ std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 
 		std::vector< WallPtr > walls = RobotWorld::getRobotWorld().getWalls();
 		for(double angle = 0; angle < 360; angle += 2) {
+			std::vector<wxPoint> intersections;
+			wxPoint robotLocation = robot->getPosition();
 			for (std::shared_ptr< Wall > wall : walls)
 			{
 				wxPoint wallPoint1 = wall->getPoint1();
 				wxPoint wallPoint2 = wall->getPoint2();
-				wxPoint robotLocation = robot->getPosition();
 				wxPoint laserEndpoint{static_cast<int>(robotLocation.x + std::cos( Utils::MathUtils::toRadians(angle)) * lidarBeamLength + noise(gen)) ,
 									static_cast<int>(robotLocation.y + std::sin( Utils::MathUtils::toRadians(angle)) * lidarBeamLength + noise(gen))};
 
-				wxPoint interSection = Utils::Shape2DUtils::getIntersection( wallPoint1, wallPoint2, robotLocation, laserEndpoint);
-
-				if(interSection != wxDefaultPosition)
+				wxPoint intersection = Utils::Shape2DUtils::getIntersection( wallPoint1, wallPoint2, robotLocation, laserEndpoint);
+				if(intersection != wxDefaultPosition)
 				{
-					double distance = Utils::Shape2DUtils::distance(robotLocation,interSection);
-					stimuli->stimuli.push_back(DistanceStimulus(angle,distance));
+					intersections.push_back(intersection);
 				}
+
 			}
+			if(intersections.size() > 1) {
+				// Intersects with more than one wall. Find the wall closest to the robot
+				std::vector<short> distances;
+				for(wxPoint intersection : intersections) {
+					short distance = static_cast<short>(std::abs(robotLocation.x - intersection.x) + std::abs(robotLocation.y - intersection.y));
+					distances.push_back(distance);
+				}
+				long index = std::distance(std::begin(distances), std::min_element(std::begin(distances), std::end(distances)));
+				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[index]);
+				stimuli->stimuli.push_back(DistanceStimulus(angle,distance));
+			} else if(intersections.size() == 1) {
+				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[0]);
+				stimuli->stimuli.push_back(DistanceStimulus(angle,distance));
+			}
+
 		}
 		return stimuli;
 	}
@@ -87,55 +102,11 @@ void Lidar::drawLidar(wxDC& dc) {
 	Robot* robot = dynamic_cast<Robot*>(agent);
 	auto stimuli = std::make_shared<DistanceStimuli>();
 	if(robot) {
-		std::random_device rd{};
-		std::mt19937 gen{rd()};
-	    std::normal_distribution<> noise{0,Lidar::stddev};
 
-		// loop over all the walls
-		// check if there is a intersection
-
-
-		std::vector< WallPtr > walls = RobotWorld::getRobotWorld().getWalls();
-		for(double angle = 0; angle < 360; angle += 2) {
-			std::vector<wxPoint> intersections;
-			wxPoint robotLocation = robot->getPosition();
-			wxPoint laserEndpoint{static_cast<int>(robotLocation.x + std::cos( Utils::MathUtils::toRadians(angle)) * (lidarBeamLength + noise(gen))) ,
-								static_cast<int>(robotLocation.y + std::sin( Utils::MathUtils::toRadians(angle)) * (lidarBeamLength + noise(gen)))};
-			for (std::shared_ptr< Wall > wall : walls)
-			{
-				wxPoint wallPoint1 = wall->getPoint1();
-				wxPoint wallPoint2 = wall->getPoint2();
-
-				wxPoint interSection = Utils::Shape2DUtils::getIntersection( wallPoint1, wallPoint2, robotLocation, laserEndpoint);
-				if(interSection != wxDefaultPosition) {
-					intersections.push_back(interSection);
-				}
-
-			}
-
-			if(intersections.size() == 1) {
-				for(wxPoint intersection : intersections) {
-					dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
-					dc.DrawCircle(intersection.x + noise(gen), intersection.y + noise(gen), 2);
-					//dc.DrawLine( robotLocation.x, robotLocation.y, intersection.x + noise(gen), intersection.y + noise(gen));
-				}
-			} else if(intersections.size() > 1) {
-				// Intersects with more than one wall. Find the wall closest to the robot
-				std::vector<short> distances;
-				for(wxPoint intersection : intersections) {
-					short distance = static_cast<short>(std::abs(robotLocation.x - intersection.x) + std::abs(robotLocation.y - intersection.y));
-					distances.push_back(distance);
-				}
-				long index = std::distance(std::begin(distances), std::min_element(std::begin(distances), std::end(distances)));
-
-				dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
-				dc.DrawCircle(intersections[index].x + noise(gen), intersections[index].y + noise(gen),2);
-				//dc.DrawLine( robotLocation.x, robotLocation.y, intersections[index].x + noise(gen), intersections[index].y + noise(gen));
-			} else {
-					dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
-					dc.DrawCircle(laserEndpoint.x + noise(gen), laserEndpoint.y + noise(gen),2);
-					//dc.DrawLine( robotLocation.x, robotLocation.y, laserEndpoint.x + noise(gen), laserEndpoint.y + noise(gen));
-			}
+		for(auto percept : robot->currentRadarPointCloud) {
+			dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
+			dc.DrawCircle(percept.point.x, percept.point.y,2);
+			//dc.DrawLine( robot->getPosition().x, robot->getPosition().y, percept.point.x, percept.point.y);
 		}
 	}
 }

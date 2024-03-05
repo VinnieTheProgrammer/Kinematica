@@ -11,7 +11,6 @@ namespace Model
 								agent{	&anAgent},
 								running( false)
 	{
-
 	}
 	/**
 	 *

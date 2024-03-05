@@ -1,11 +1,12 @@
-#ifndef COMPASS_H_
-#define COMPASS_H_
+#ifndef ODOMETER_H_
+#define ODOMETER_H_
 
 #include "Config.hpp"
 
 #include "AbstractSensor.hpp"
-#include "AnglePercept.hpp"
+#include "OdoPercept.hpp"
 #include "Widgets.hpp"
+#include <vector>
 
 namespace Model
 {
@@ -13,15 +14,17 @@ namespace Model
 	class Robot;
 	typedef std::shared_ptr<Robot> RobotPtr;
 
-	class Compass : public AbstractSensor {
+	class Odometer : public AbstractSensor {
 	public:
-		explicit Compass(Robot& aRobot);
+		inline static std::vector<wxPoint> path;
+		explicit Odometer(Robot& aRobot);
 		virtual std::shared_ptr< AbstractStimulus > getStimulus() const override;
 		virtual std::shared_ptr< AbstractPercept > getPerceptFor( std::shared_ptr< AbstractStimulus > anAbstractStimulus) const override;
+		void drawOdometer(wxDC& dc);
 		/**
 		 *
 		 */
-		static void setStdDev(double aStdDev) {Compass::stddev = aStdDev;}
+		static void setStdDev(double aStdDev) {Odometer::stddev = aStdDev;}
 		/**
 		 *
 		 */
@@ -45,4 +48,4 @@ namespace Model
 
 }
 
-#endif //COMPASS_H_
+#endif //ODOMETER_H_

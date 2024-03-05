@@ -12,6 +12,7 @@
 #include "Trace.hpp"
 #include "Wall.hpp"
 #include "Lidar.hpp"
+#include "Odometer.hpp"
 
 #include "MathUtils.hpp"
 
@@ -94,6 +95,8 @@ namespace View
 		}
 
 		drawPath( dc);
+		std::shared_ptr<Model::Odometer> odo = std::dynamic_pointer_cast<Model::Odometer>(getRobot()->sensors[1]);
+		odo->drawOdometer(dc);
 
 
 		//drawLaser( dc);

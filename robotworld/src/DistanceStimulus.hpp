@@ -15,6 +15,7 @@ namespace Model
 	class DistanceStimulus : public AbstractStimulus
 	{
 		public:
+			DistanceStimulus() = default;
 			/**
 			 *
 			 */

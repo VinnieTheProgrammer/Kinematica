@@ -256,6 +256,8 @@ namespace Model
 			PointCloud currentRadarPointCloud; // The latest radar point cloud
 
 			float currectCompassAngle; // The latest compass angle of the robot
+
+			std::vector<wxPoint> currectOdometerReading;
 			//@}
 
 		protected:

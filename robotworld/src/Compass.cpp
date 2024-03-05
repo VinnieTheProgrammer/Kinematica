@@ -26,7 +26,6 @@ std::shared_ptr<AbstractStimulus> Compass::getStimulus() const {
 		std::mt19937 gen{rd()};
 	    std::normal_distribution<> noise{0,Compass::stddev};
 		double angle = std::abs(Utils::MathUtils::toDegrees(Utils::Shape2DUtils::getAngle( robot->getFront())) + noise(gen));
-		// std::cout << "compass angle: " << angle << "\n";
 
 		// add this to stimulus
 		stimulus->angle = angle;
@@ -38,7 +37,7 @@ std::shared_ptr<AbstractStimulus> Compass::getStimulus() const {
 }
 
 std::shared_ptr<AbstractPercept> Compass::getPerceptFor(
-		std::shared_ptr<AbstractStimulus> anAbstractStimulus) const {
+	std::shared_ptr<AbstractStimulus> anAbstractStimulus) const {
 	Robot* robot = dynamic_cast< Robot* >( agent);
 	auto percept = std::make_shared<AnglePercept>();
 	 std::shared_ptr<AngleStimulus> stimulus = std::dynamic_pointer_cast<AngleStimulus>(anAbstractStimulus);
@@ -57,16 +56,6 @@ std::string Compass::asString() const {
 
 std::string Compass::asDebugString() const {
 	return asString();
-}
-
-void Compass::drawCompass(wxDC& dc) {
-	Robot* robot = dynamic_cast<Robot*>(agent);
-	auto stimuli = std::make_shared<DistanceStimuli>();
-	if(robot) {
-		std::random_device rd{};
-		std::mt19937 gen{rd()};
-	    std::normal_distribution<> noise{0,Compass::stddev};
-	}
 }
 
 }
