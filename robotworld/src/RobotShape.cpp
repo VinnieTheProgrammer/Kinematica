@@ -14,6 +14,8 @@
 #include "Lidar.hpp"
 #include "Odometer.hpp"
 
+#include "ParticleFilter.hpp"
+
 #include "MathUtils.hpp"
 
 #include <cmath>
@@ -100,6 +102,8 @@ namespace View
 
 
 		//drawLaser( dc);
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+		robot->particleFilter.drawParticles(dc);
 
 		std::shared_ptr<Model::Lidar> lidar = std::dynamic_pointer_cast<Model::Lidar>(getRobot()->sensors.back());
 		lidar->drawLidar(dc);

@@ -26,13 +26,13 @@ namespace Model
 		virtual std::shared_ptr< AbstractPercept > getPerceptFor( std::shared_ptr< AbstractStimulus > anAbstractStimulus) const override;
 		void drawLidar(wxDC& dc);
 		/**
-		 *
+		 * 
 		 */
-		static void setStdDev(double aStdDev) {Lidar::stddev = aStdDev;}
+		static void setStdDev(unsigned short aStdDev) {Lidar::stddev = aStdDev;}
 		/**
 		 *
 		 */
-		static double getStdDev(){ return stddev;}
+		static unsigned short getStdDev(){ return stddev;}
 
 		/**
 		 * Returns a 1-line description of the object
@@ -46,7 +46,7 @@ namespace Model
 		/**
 		 * Standard deviation of the odometer per 10 pixels
 		 */
-		static double stddev;
+		static unsigned short stddev;
 
 	};
 

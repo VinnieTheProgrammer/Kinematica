@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cstring>
 
+#include "Configurator.hpp"
+
 
 namespace Application
 {
@@ -39,6 +41,8 @@ namespace Application
 		wxInitAllImageHandlers();
 
 		MainApplication::setCommandlineArguments( argc, argv);
+
+		Configurator::getConfigFromFile("/home/vincent/School/WoR/Kinematica/robotworld/stdev.txt");
 
 		MainFrameWindow* frame = nullptr;
 		if(MainApplication::isArgGiven("-worldname"))

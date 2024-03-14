@@ -9,13 +9,16 @@
 #include "MathUtils.hpp"
 #include <random>
 #include "AngleStimulus.hpp"
+#include "Configurator.hpp"
 
 namespace Model
 {
 
-double Compass::stddev = 2.0;
+unsigned short Compass::stddev = 0;
 
-Compass::Compass(Robot &aRobot): AbstractSensor( aRobot) {}
+Compass::Compass(Robot &aRobot): AbstractSensor( aRobot) {
+	Compass::setStdDev(Configurator::getCompassStdev());
+}
 
 std::shared_ptr<AbstractStimulus> Compass::getStimulus() const {
 	Robot* robot = dynamic_cast<Robot*>(agent);

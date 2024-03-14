@@ -50,7 +50,8 @@ namespace Model
 								speed( 0.0),
 								acting(false),
 								driving(false),
-								communicating(false)
+								communicating(false), 
+								particleFilter(1000)
 	{
 		//std::shared_ptr< AbstractSensor > laserSensor = std::make_shared<LaserDistanceSensor>( *this);
 		//attachSensor( laserSensor);
@@ -491,11 +492,11 @@ namespace Model
 						} else if(typeid(tempAbstractPercept) == typeid(AnglePercept)) {
 							AnglePercept* anglePercept = dynamic_cast<AnglePercept*>(percept.value().get());
 							currectCompassAngle = anglePercept->angle;
-							std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
+							//std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
 						} else if(typeid(tempAbstractPercept) == typeid(OdoPercept)) {
 							OdoPercept* odoPercept = dynamic_cast<OdoPercept*>(percept.value().get());
 							currectOdometerReading.push_back(odoPercept->point);
-							std::cout << "currentOdometerReading: " << odoPercept->point << std::endl;
+							//std::cout << "currentOdometerReading: " << odoPercept->point << std::endl;
 						}
 
 						else {
@@ -508,6 +509,7 @@ namespace Model
 				}
 
 				// Update the belief
+				particleFilter.executeParticleFilter();
 
 				// Stop on arrival or collision
 				if (arrived(goal) || collision())

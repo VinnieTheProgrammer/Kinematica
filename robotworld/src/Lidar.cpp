@@ -9,13 +9,17 @@
 #include "MathUtils.hpp"
 #include <random>
 #include "DistanceStimuli.hpp"
+#include "Configurator.hpp"
+#include <iostream>
 
 namespace Model
 {
 
-double Lidar::stddev = 10.0;
+unsigned short Lidar::stddev = 0;
 
-Lidar::Lidar(Robot &aRobot): AbstractSensor( aRobot) {}
+Lidar::Lidar(Robot &aRobot): AbstractSensor( aRobot) {
+	Lidar::setStdDev(Configurator::getLidarStdev());
+}
 
 std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 	Robot* robot = dynamic_cast<Robot*>(agent);
@@ -24,7 +28,7 @@ std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 	{
 		std::random_device rd{};
 		std::mt19937 gen{rd()};
-	    std::normal_distribution<> noise{0,Lidar::stddev};
+	    std::normal_distribution<> noise{-Lidar::stddev,Lidar::stddev};
 
 		std::vector< WallPtr > walls = RobotWorld::getRobotWorld().getWalls();
 		for(double angle = 0; angle < 360; angle += 2) {
@@ -52,10 +56,10 @@ std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 					distances.push_back(distance);
 				}
 				long index = std::distance(std::begin(distances), std::min_element(std::begin(distances), std::end(distances)));
-				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[index]);
+				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[index]) + noise(gen);
 				stimuli->stimuli.push_back(DistanceStimulus(angle,distance));
 			} else if(intersections.size() == 1) {
-				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[0]);
+				double distance = Utils::Shape2DUtils::distance(robotLocation,intersections[0]) + noise(gen);
 				stimuli->stimuli.push_back(DistanceStimulus(angle,distance));
 			}
 
@@ -105,8 +109,8 @@ void Lidar::drawLidar(wxDC& dc) {
 
 		for(auto percept : robot->currentRadarPointCloud) {
 			dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
-			dc.DrawCircle(percept.point.x, percept.point.y,2);
-			//dc.DrawLine( robot->getPosition().x, robot->getPosition().y, percept.point.x, percept.point.y);
+			//dc.DrawCircle(percept.point.x, percept.point.y,2);
+			dc.DrawLine( robot->getPosition().x, robot->getPosition().y, percept.point.x, percept.point.y);
 		}
 	}
 }

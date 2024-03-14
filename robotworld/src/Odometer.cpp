@@ -10,13 +10,15 @@
 #include <random>
 #include "OdoStimulus.hpp"
 #include "OdoPercept.hpp"
+#include "Configurator.hpp"
 
 namespace Model
 {
 
-double Odometer::stddev = 3.0;
+unsigned short Odometer::stddev = 0;
 
 Odometer::Odometer(Robot &aRobot): AbstractSensor( aRobot) {
+	Odometer::setStdDev(Configurator::getCompassStdev());
 }
 
 std::shared_ptr<AbstractStimulus> Odometer::getStimulus() const {

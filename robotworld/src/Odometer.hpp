@@ -24,11 +24,11 @@ namespace Model
 		/**
 		 *
 		 */
-		static void setStdDev(double aStdDev) {Odometer::stddev = aStdDev;}
+		static void setStdDev(unsigned short aStdDev) {Odometer::stddev = aStdDev;}
 		/**
 		 *
 		 */
-		static double getStdDev(){ return stddev;}
+		static unsigned short getStdDev(){ return stddev;}
 
 		/**
 		 * Returns a 1-line description of the object
@@ -42,7 +42,7 @@ namespace Model
 		/**
 		 * Standard deviation of the odometer per 10 pixels
 		 */
-		static double stddev;
+		static unsigned short stddev;
 
 	};
 

@@ -20,6 +20,8 @@
 #include <string>
 #include <thread>
 
+#include "ParticleFilter.hpp"
+
 namespace Messaging
 {
 	class Message;
@@ -258,6 +260,7 @@ namespace Model
 			float currectCompassAngle; // The latest compass angle of the robot
 
 			std::vector<wxPoint> currectOdometerReading;
+			ParticleFilter particleFilter;
 			//@}
 
 		protected:
