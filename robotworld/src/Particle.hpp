@@ -8,13 +8,14 @@ class Particle {
     private:
     
     public:
-        unsigned short weight;
+        double weight;
         wxPoint position;
         float compassMeasurement;
         float speedMeasurement;
         std::vector<wxPoint> lidarMeasurements;
 
         Particle(const wxPoint & position);
+        Particle(){};
         void collectMeasurements();
 
 };

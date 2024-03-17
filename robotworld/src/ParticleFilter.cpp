@@ -5,12 +5,14 @@
 #include "Robot.hpp"
 #include "Odometer.hpp"
 #include "Configurator.hpp"
+#include "MathUtils.hpp"
+#include <limits.h>
 
 #include <cmath>
 
 std::vector<Particle> ParticleFilter::particles;
         
-ParticleFilter::ParticleFilter(const int  & particleStartNr) : particleStartNr(particleStartNr), initialized(false) {
+ParticleFilter::ParticleFilter(const int  & particleStartNr) : particleStartNr(particleStartNr), initialized(false), iterations(0) {
 
 }
 
@@ -19,10 +21,11 @@ void ParticleFilter::generateInitialPos() {
 
         std::random_device rd{};
         std::mt19937 gen{rd()};
-        std::normal_distribution<> noise{0,1024};
+        std::uniform_int_distribution<std::mt19937::result_type> dist(0,1024);
 
         for(int i = 0; i < particleStartNr; ++i) {
-            Particle particle(wxPoint(std::abs(noise(gen)), std::abs(noise(gen))));
+            wxPoint location = {dist(gen), dist(gen)};
+            Particle particle(location);
             particles.push_back(particle);
         }
         initialized = true;
@@ -40,12 +43,23 @@ void ParticleFilter::drawParticles(wxDC& dc) {
 }
 
 void ParticleFilter::updateParticles() {
-    // Move all particles in the direction of the update from the robot. 
-    // Take the odometer measurement of the distance/angle and move the particle in that relative direction with a small error (maybe already present)
-    for(Particle & particle : particles) {
-        wxPoint updatedLocation = calcUpdatedParticleLocations(particle);
-        particle.position = updatedLocation;
+    if(iterations == 0) {
+        return; // To ensure the first iterations isn't updated.
     }
+
+    // Give all particles far away ( > robotspeed) from the previous "winning" particles a debuff in weight
+    Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+	float speed = robot->getSpeed();
+
+    // for all pixels further away then the best pixel + the robot speed, add the distance to the weight as a debuff
+    for(Particle particle : particles) {
+        double distanceToBest = std::abs(particle.position.x - previousBestParticle.position.x) + std::abs(particle.position.y - previousBestParticle.position.y);
+        if(distanceToBest >= (2 * speed)) { // 2x the speed to acount for the distance being x + y
+            particle.weight += distanceToBest;
+        }
+    }
+
+
 }
 
 void ParticleFilter::collectMeasurements() {
@@ -55,89 +69,82 @@ void ParticleFilter::collectMeasurements() {
 
 }
 
-wxPoint ParticleFilter::calcUpdatedParticleLocations(const Particle & particle) {
-    Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
-	float speed = robot->getSpeed();
-	float compassMeasurement = robot->currectCompassAngle;
-
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
-    std::normal_distribution<> noise{-1,1};
-
-    wxPoint updatedLocation{static_cast< int >( particle.position.x + std::cos( compassMeasurement)* (speed + noise(gen))),
-    static_cast< int >( particle.position.y + std::sin( compassMeasurement)* (speed + noise(gen)))};
-
-    return updatedLocation;
-}
-
-double dotProduct(const std::vector<wxPoint>& v1, const std::vector<wxPoint>& v2) {
-    double result = 0.0;
-    for (size_t i = 0; i < v1.size(); ++i) {
-        result += v1[i].x * v2[i].x + v1[i].y * v2[i].y;
-    }
-    return result;
-}
-
-double magnitude(const std::vector<wxPoint>& v) {
-    double result = 0.0;
-    for (const wxPoint& point : v) {
-        result += point.x * point.x + point.y * point.y;
-    }
-    return std::sqrt(result);
-}
-
-// Calculate cosine similarity between two vectors (v1 and v2 are vectors of wxPoint objects)
-double cosineSimilarity(const std::vector<wxPoint>& v1, const std::vector<wxPoint>& v2) {
-    // Check if the vectors have the same size
-    if (v1.size() != v2.size()) {
-        std::cerr << "Vectors must have the same size. v1: " << v1.size() << " v2: " << v2.size() << std::endl;
-        return 0.0;
-    }
-
-    double dot = dotProduct(v1, v2);
-    double mag1 = magnitude(v1);
-    double mag2 = magnitude(v2);
-
-    // Avoid division by zero
-    if (mag1 == 0.0 || mag2 == 0.0) {
-        return 0.0;
-    }
-
-    return dot / (mag1 * mag2);
-}
-
-void ParticleFilter::compareMeasurements() {
+bool ParticleFilter::compareMeasurements() {
     collectMeasurements();
     // Compare the lidarscan of the particles with the robot. 
 
     Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
     auto robotPercepts = robot->currentRadarPointCloud;
+    if(robotPercepts.empty()) {
+        std::cout << "No robot data yet" << std::endl;
+        return false;
+    }
+
     std::vector<wxPoint> robotCloud;
     // convert radarPointCloud to vector<wxPoint>
     for(Model::DistancePercept percept : robotPercepts) {
         robotCloud.push_back(percept.point);
     }
-    for(Particle & particle : particles) {
-        auto particleCloud = particle.lidarMeasurements;
-        for(int i = 0; i < particleCloud.size(); ++i) {
-            double simularity = cosineSimilarity(particleCloud, robotCloud);
-            std::cout << "simularity: " << simularity << std::endl;
+    double maxDeviation = 0; // Keep a record of the bigest to get a smaller range later on
+    for(int i = 0; i < particles.size(); ++i) {
+        double deviation = 0;
+        auto particleCloud = particles[i].lidarMeasurements;
+        for(int j = 0; j < particleCloud.size(); ++j) {
+            double xDev = std::abs(robotCloud[j].x - particleCloud[j].x);
+            double yDev = std::abs(robotCloud[j].y - particleCloud[j].y);
+            deviation += (xDev + yDev);
+        }
+        particles[i].weight = deviation;
+
+        if(deviation > maxDeviation) {
+            maxDeviation = deviation;
         }
     }
-    // required:
-    // Sum of lidar endlpoints squared
-    // A: robot lidar vector
-    // Cosine simularity (?) -> 
 
+    // This ensures we will have a range of 0-1 instead of a huge range of combined deviations, which is less clean and harder to deal with.
+    for(Particle particle: particles) {
+        particle.weight /= maxDeviation; 
+    }
+
+    return true;
+}
+
+bool sortByWeight(const Particle& a, const Particle& b) {
+    // Sort based on the 'value' variable
+    return a.weight < b.weight;
 }
 
 void ParticleFilter::resample() {
-    // resample proportional to weight
+    std::sort(particles.begin(), particles.end(), sortByWeight);
+
+    // Take the best particle and use it to resample
+    Particle bestParticle = particles[0];
+    previousBestParticle = bestParticle; // previous best particle for the update
+    particles.clear();
+
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<> newXPosition{bestParticle.position.x,15};
+    std::normal_distribution<> newYPosition{bestParticle.position.y,15};
+    short nrOfResampledParticles = particleStartNr - (iterations * 25);
+
+    if(nrOfResampledParticles < 100) {
+        nrOfResampledParticles = 100;
+    }
+
+    for(int i = 0; i < nrOfResampledParticles; ++i) {
+        wxPoint location = {newXPosition(gen), newYPosition(gen)};
+        Particle particle(location);
+        particles.push_back(particle);
+    }
+
 }
 
 void ParticleFilter::executeParticleFilter() {
     generateInitialPos();
     updateParticles();
-    compareMeasurements();
-    //resample();
+    if(compareMeasurements()) {
+        resample();
+        iterations++;
+    }
 }

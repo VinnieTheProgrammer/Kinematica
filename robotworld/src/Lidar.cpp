@@ -28,7 +28,7 @@ std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 	{
 		std::random_device rd{};
 		std::mt19937 gen{rd()};
-	    std::normal_distribution<> noise{-Lidar::stddev,Lidar::stddev};
+	    std::normal_distribution<> noise{0,Lidar::stddev};
 
 		std::vector< WallPtr > walls = RobotWorld::getRobotWorld().getWalls();
 		for(double angle = 0; angle < 360; angle += 2) {
@@ -45,6 +45,8 @@ std::shared_ptr<AbstractStimulus> Lidar::getStimulus() const {
 				if(intersection != wxDefaultPosition)
 				{
 					intersections.push_back(intersection);
+				}  else {
+					intersections.push_back(laserEndpoint);
 				}
 
 			}

@@ -11,6 +11,7 @@ Particle::Particle(const wxPoint & position): position(position) {
 }
 
 void Particle::collectMeasurements() {
+	lidarMeasurements.clear();
     // get Lidar data
     std::vector< Model::WallPtr > walls = Model::RobotWorld::getRobotWorld().getWalls();
 		for(double angle = 0; angle < 360; angle += 2) {
@@ -28,6 +29,9 @@ void Particle::collectMeasurements() {
 				{
 					intersections.push_back(intersection);
                     angles.push_back(angle);
+				} else {
+					intersections.push_back(laserEndpoint);
+					angles.push_back(angle);
 				}
 
 			}

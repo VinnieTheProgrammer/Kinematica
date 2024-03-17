@@ -28,7 +28,7 @@ std::shared_ptr<AbstractStimulus> Odometer::getStimulus() const {
 	{
 		std::random_device rd{};
 		std::mt19937 gen{rd()};
-	    std::normal_distribution<> noise{-Odometer::stddev,Odometer::stddev};
+	    std::normal_distribution<> noise{0,Odometer::stddev};
 		double angle = std::abs(Utils::MathUtils::toDegrees(Utils::Shape2DUtils::getAngle( robot->getFront())) + noise(gen));
 		float speed = robot->getSpeed() + noise(gen);
 
@@ -49,8 +49,8 @@ std::shared_ptr<AbstractPercept> Odometer::getPerceptFor(
 	if (robot)
 	{
 		if(stimulus) {
-			wxPoint endpoint{	static_cast< int >( robot->getPosition().x + std::cos( stimulus->angle)*stimulus->distance),
-				static_cast< int >( robot->getPosition().y + std::sin( stimulus->angle)*stimulus->distance)};
+			wxPoint endpoint{	static_cast< int >( robot->getPosition().x + std::cos( Utils::MathUtils::toRadians(stimulus->angle))*stimulus->distance),
+				static_cast< int >( robot->getPosition().y + std::sin( Utils::MathUtils::toRadians(stimulus->angle))*stimulus->distance)};
 			percept->point = endpoint;
 		}
 	}
