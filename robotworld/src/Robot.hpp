@@ -21,6 +21,7 @@
 #include <thread>
 
 #include "ParticleFilter.hpp"
+#include "KalmanFilter.hpp"
 
 namespace Messaging
 {
@@ -261,6 +262,7 @@ namespace Model
 
 			std::vector<wxPoint> currectOdometerReading;
 			ParticleFilter particleFilter;
+			KalmanFilter kalmanFilter;
 			//@}
 
 		protected:

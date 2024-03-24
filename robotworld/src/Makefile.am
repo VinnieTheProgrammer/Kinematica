@@ -44,6 +44,7 @@ robotworld_SOURCES 	= 	AbstractActuator.cpp	\
 						Odometer.cpp \
 						Particle.cpp \
 						Configurator.cpp \
+						KalmanFilter.cpp \
 						ParticleFilter.cpp					
 
 robotworld_CPPFLAGS 	=	$(AM_CPPFLAGS) $(ROBOTWORLD_CPPFLAGS) $(WX_CPPFLAGS)

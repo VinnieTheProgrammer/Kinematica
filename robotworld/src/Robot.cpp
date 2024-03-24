@@ -51,16 +51,28 @@ namespace Model
 								acting(false),
 								driving(false),
 								communicating(false), 
-								particleFilter(500)
+								particleFilter(500),
+								kalmanFilter(Matrix<double, 4, 1>(0), Matrix<double, 2, 1>(0))
 	{
-		//std::shared_ptr< AbstractSensor > laserSensor = std::make_shared<LaserDistanceSensor>( *this);
-		//attachSensor( laserSensor);
 		std::shared_ptr< AbstractSensor > compass = std::make_shared<Compass>( *this);
 		attachSensor(compass);
 		std::shared_ptr< AbstractSensor > odometer = std::make_shared<Odometer>( *this);
 		attachSensor(odometer);
 		std::shared_ptr< AbstractSensor > lidarSensor = std::make_shared<Lidar>( *this);
 		attachSensor(lidarSensor);
+
+		// Initialize kalman filter
+
+		Matrix<double,4,1> initState(0);
+		initState.at(0,0) = position.x;
+		initState.at(1,0) = position.y;
+		initState.at(2,0) = speed;
+		initState.at(3,0) = speed;
+		Matrix<double,2,1> initCovariance(0);
+		initCovariance.at(0,0) = 1.5;
+		initCovariance.at(1,0) = 1.5;
+		kalmanFilter.setCurrentCovariance(initCovariance);
+		kalmanFilter.setCurrentState(initState);
 
 		// We use the real position for starters, not an estimated position.
 		startPosition = position;
@@ -509,7 +521,17 @@ namespace Model
 				}
 
 				// Update the belief
-				particleFilter.executeParticleFilter();
+				//particleFilter.executeParticleFilter();
+				if(currectOdometerReading.size() > 0) {
+					Matrix<double,4,1> measurement(0);
+					// measurement.at(0,0) = position.x;
+					//measurement.at(1,0) = position.y;
+					measurement.at(0,0) = currectOdometerReading.back().x;
+					measurement.at(1,0) = currectOdometerReading.back().y;
+					Matrix<double,2,1> result = kalmanFilter.executeKalmanFilter(measurement);
+					std::cout << "kalman result: " << result.to_string() << std::endl;
+					std::cout << "where he actualy is: " << position.x << "," << position.y << std::endl;
+				}
 
 				// Stop on arrival or collision
 				if (arrived(goal) || collision())
