@@ -4,7 +4,7 @@
 #include <iostream>
 
 unsigned short Configurator::lidarStdev = 10;
-unsigned short Configurator::odoStdev = 10;
+unsigned short Configurator::odoStdev = 1;
 unsigned short Configurator::compassStdev = 2;
 
 void Configurator::getConfigFromFile(const std::string& filename) {

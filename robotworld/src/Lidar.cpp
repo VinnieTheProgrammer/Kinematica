@@ -111,7 +111,6 @@ void Lidar::drawLidar(wxDC& dc) {
 
 		for(auto percept : robot->currentRadarPointCloud) {
 			dc.SetPen( wxPen(  "RED", 2, wxPENSTYLE_SOLID));
-			//dc.DrawCircle(percept.point.x, percept.point.y,2);
 			dc.DrawLine( robot->getPosition().x, robot->getPosition().y, percept.point.x, percept.point.y);
 		}
 	}
