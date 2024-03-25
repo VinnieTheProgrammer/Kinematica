@@ -38,6 +38,8 @@ namespace Model
 	class Goal;
 	typedef std::shared_ptr< Goal > GoalPtr;
 
+	enum beliefType {NONE=0,KALMAN=1,PARTICLE=2, BOTH=3};
+
 	/**
 	 *
 	 */
@@ -246,6 +248,8 @@ namespace Model
 			 * Returns a description of the object with all data of the object usable for debugging
 			 */
 			virtual std::string asDebugString() const override;
+
+			void drawBelief(wxDC& dc);
 			//@}
 
 			/**
@@ -263,6 +267,13 @@ namespace Model
 			std::vector<wxPoint> currectOdometerReading;
 			ParticleFilter particleFilter;
 			KalmanFilter kalmanFilter;
+			beliefType belType;
+			std::vector<wxPoint> kalmanBeliefPath;
+			std::vector<wxPoint> particleBeliefPath;
+			wxPoint kalmanBelief;
+			wxPoint particleBelief;
+
+
 			//@}
 
 		protected:

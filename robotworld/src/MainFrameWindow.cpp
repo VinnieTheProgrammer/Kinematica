@@ -495,6 +495,30 @@ namespace Application
 					wxGBPosition( 5, 3),
 					wxGBSpan( 1, 1),
 					wxGROW);
+		sizer->Add( makeButton( panel,
+								"None",
+								[this](wxCommandEvent& anEvent){this->OnNoFilter(anEvent);}),
+					wxGBPosition( 7, 1),
+					wxGBSpan( 1, 1),
+					wxGROW);
+		sizer->Add( makeButton( panel,
+								"Kalman",
+								[this](wxCommandEvent& anEvent){this->OnKalman(anEvent);}),
+					wxGBPosition( 7, 2),
+					wxGBSpan( 1, 1),
+					wxGROW);
+		sizer->Add( makeButton( panel,
+								"Particle",
+								[this](wxCommandEvent& anEvent){this->OnParticle(anEvent);}),
+					wxGBPosition( 7, 3),
+					wxGBSpan( 1, 1),
+					wxGROW);
+		sizer->Add( makeButton( panel,
+								"Both",
+								[this](wxCommandEvent& anEvent){this->OnBothFilters(anEvent);}),
+					wxGBPosition( 7, 4),
+					wxGBSpan( 1, 1),
+					wxGROW);
 
 		sizer->Add( 5, 5,
 					wxGBPosition( 6, 4),
@@ -754,6 +778,43 @@ namespace Application
 			robot->stopCommunicating();
 		}
 	}
+
+	void MainFrameWindow::OnNoFilter(wxCommandEvent& anEvent) {
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
+		if (robot)
+		{
+			robot->belType = Model::NONE;
+			robot->kalmanBelief = {-1,-1};
+			robot->particleBelief = {-1,-1};
+		}
+	}
+
+	void MainFrameWindow::OnKalman(wxCommandEvent& anEvent) {
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
+		if (robot)
+		{
+			robot->belType = Model::KALMAN;
+			robot->particleBelief = {-1,-1};
+		}
+	}
+
+	void MainFrameWindow::OnParticle(wxCommandEvent& anEvent) {
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
+		if (robot)
+		{
+			robot->belType = Model::PARTICLE;
+			robot->kalmanBelief = {-1,-1};
+		}
+	}
+
+	void MainFrameWindow::OnBothFilters(wxCommandEvent& anEvent) {
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
+		if (robot)
+		{
+			robot->belType = Model::BOTH;
+		}
+	}
+
 	/**
 	 *
 	 */

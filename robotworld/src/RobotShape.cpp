@@ -97,18 +97,11 @@ namespace View
 		}
 
 		drawPath( dc);
-		std::shared_ptr<Model::Odometer> odo = std::dynamic_pointer_cast<Model::Odometer>(getRobot()->sensors[1]);
-		odo->drawOdometer(dc);
-
-
-		//drawLaser( dc);
-		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
-		robot->particleFilter.drawParticles(dc);
-
-		// std::shared_ptr<Model::Lidar> lidar = std::dynamic_pointer_cast<Model::Lidar>(getRobot()->sensors.back());
-		// lidar->drawLidar(dc);
 
 		drawRobot( dc);
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+		robot->drawBelief(dc);
+
 	}
 	/**
 	 *

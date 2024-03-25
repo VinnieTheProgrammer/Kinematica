@@ -52,7 +52,10 @@ namespace Model
 								driving(false),
 								communicating(false), 
 								particleFilter(500),
-								kalmanFilter(Matrix<double, 4, 1>(0), Matrix<double, 2, 1>(0))
+								kalmanFilter(Matrix<double, 4, 1>(0), Matrix<double, 4, 1>(0)),
+								kalmanBelief(position),
+								particleBelief(position),
+								belType(beliefType::NONE)
 	{
 		std::shared_ptr< AbstractSensor > compass = std::make_shared<Compass>( *this);
 		attachSensor(compass);
@@ -66,11 +69,13 @@ namespace Model
 		Matrix<double,4,1> initState(0);
 		initState.at(0,0) = position.x;
 		initState.at(1,0) = position.y;
-		initState.at(2,0) = speed;
-		initState.at(3,0) = speed;
-		Matrix<double,2,1> initCovariance(0);
-		initCovariance.at(0,0) = 1.5;
-		initCovariance.at(1,0) = 1.5;
+		initState.at(2,0) = 10;
+		initState.at(3,0) = 10;
+		Matrix<double,4,1> initCovariance(0);
+		initCovariance.at(0,0) = .5;
+		initCovariance.at(1,0) = .5;
+		initCovariance.at(2,0) = .5;
+		initCovariance.at(3,0) = .5;
 		kalmanFilter.setCurrentCovariance(initCovariance);
 		kalmanFilter.setCurrentState(initState);
 
@@ -448,6 +453,32 @@ namespace Model
 	/**
 	 *
 	 */
+
+	void Robot::drawBelief(wxDC& dc) {
+		if(belType == beliefType::KALMAN || belType == beliefType::BOTH) {
+			// dc.SetPen( wxPen(  "ORANGE", 2, wxPENSTYLE_SOLID));
+			// dc.DrawCircle(kalmanBelief.x, kalmanBelief.y,4);
+			if(kalmanBeliefPath.size() < 1) {return;}
+		
+			for(size_t i = 0; i < kalmanBeliefPath.size() -1; ++i) {
+				dc.SetPen( wxPen(  "ORANGE", 2, wxPENSTYLE_SOLID));
+				wxPoint currentPoint = kalmanBeliefPath[i];
+				wxPoint nextPoint = kalmanBeliefPath[i + 1];
+				dc.DrawLine(currentPoint, nextPoint);
+			}
+		}
+		if(belType == beliefType::PARTICLE || belType == beliefType::BOTH) {
+			if(particleBeliefPath.size() < 1) {return;}
+		
+			for(size_t i = 0; i < particleBeliefPath.size() -1; ++i) {
+				dc.SetPen( wxPen(  "GREEN", 2, wxPENSTYLE_SOLID));
+				wxPoint currentPoint = particleBeliefPath[i];
+				wxPoint nextPoint = particleBeliefPath[i + 1];
+				dc.DrawLine(currentPoint, nextPoint);
+			}
+		}
+	}
+
 	void Robot::drive()
 	{
 		try
@@ -504,11 +535,10 @@ namespace Model
 						} else if(typeid(tempAbstractPercept) == typeid(AnglePercept)) {
 							AnglePercept* anglePercept = dynamic_cast<AnglePercept*>(percept.value().get());
 							currectCompassAngle = anglePercept->angle;
-							std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
+							//std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
 						} else if(typeid(tempAbstractPercept) == typeid(OdoPercept)) {
 							OdoPercept* odoPercept = dynamic_cast<OdoPercept*>(percept.value().get());
 							currectOdometerReading.push_back(odoPercept->point);
-							//std::cout << "currentOdometerReading: " << odoPercept->point << std::endl;
 						}
 
 						else {
@@ -521,16 +551,22 @@ namespace Model
 				}
 
 				// Update the belief
-				//particleFilter.executeParticleFilter();
-				if(currectOdometerReading.size() > 0) {
-					Matrix<double,4,1> measurement(0);
-					// measurement.at(0,0) = position.x;
-					//measurement.at(1,0) = position.y;
-					measurement.at(0,0) = currectOdometerReading.back().x;
-					measurement.at(1,0) = currectOdometerReading.back().y;
-					Matrix<double,2,1> result = kalmanFilter.executeKalmanFilter(measurement);
-					std::cout << "kalman result: " << result.to_string() << std::endl;
-					std::cout << "where he actualy is: " << position.x << "," << position.y << std::endl;
+				if(belType == beliefType::KALMAN || belType == beliefType::BOTH ) {
+					if(currectOdometerReading.size() > 0) {
+						Matrix<double,4,1> measurement(0);
+						measurement.at(0,0) = currectOdometerReading.back().x;
+						measurement.at(1,0) = currectOdometerReading.back().y;
+						measurement.at(2,0) = 10;
+						measurement.at(3,0) = 10;
+						Matrix<double,2,1> result = kalmanFilter.executeKalmanFilter(measurement);
+						kalmanBelief = {result.at(0,0), result.at(1,0)};
+						kalmanBeliefPath.push_back(kalmanBelief);
+					}
+				} 
+				if(belType == beliefType::PARTICLE || belType == beliefType::BOTH) {
+					particleFilter.executeParticleFilter();
+					particleBelief = particleFilter.getBestParticle().position;
+					particleBeliefPath.push_back(particleBelief);
 				}
 
 				// Stop on arrival or collision

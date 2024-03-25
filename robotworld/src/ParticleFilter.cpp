@@ -36,10 +36,14 @@ void ParticleFilter::drawParticles(wxDC& dc) {
     if(!initialized) {
         generateInitialPos();
     }
-    for(Particle & particle : particles) {
+    // for(Particle & particle : particles) {
         dc.SetPen( wxPen(  "GREEN", 2, wxPENSTYLE_SOLID));
-        dc.DrawCircle(particle.position.x, particle.position.y,2);
-    }
+        dc.DrawCircle(previousBestParticle.position.x, previousBestParticle.position.y,2);
+    // }
+}
+
+Particle ParticleFilter::getBestParticle() {
+    return previousBestParticle;
 }
 
 void ParticleFilter::updateParticles() {

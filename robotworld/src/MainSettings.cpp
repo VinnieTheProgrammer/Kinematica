@@ -5,7 +5,7 @@ namespace Application
 	/**
 	 *
 	 */
-	MainSettings::MainSettings() : drawOpenSet(true), speed(10), worldNumber(0)
+	MainSettings::MainSettings() : drawOpenSet(false), speed(10), worldNumber(0)
 	{
 	}
 	/**
