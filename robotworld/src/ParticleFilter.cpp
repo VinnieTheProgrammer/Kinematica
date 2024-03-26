@@ -60,21 +60,6 @@ void ParticleFilter::updateParticles() {
                     static_cast< int >( particle.position.y + std::sin( Utils::MathUtils::toRadians(angle))*distance)};
         particle.position = endpoint;
     }
-
-    
-    // // Give all particles far away ( > robotspeed) from the previous "winning" particles a debuff in weight
-    // Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
-	// float speed = robot->getSpeed();
-
-    // // for all pixels further away then the best pixel + the robot speed, add the distance to the weight as a debuff
-    // for(Particle particle : particles) {
-    //     double distanceToBest = std::abs(particle.position.x - previousBestParticle.position.x) + std::abs(particle.position.y - previousBestParticle.position.y);
-    //     if(distanceToBest >= (2 * speed)) { // 2x the speed to acount for the distance being x + y
-    //         particle.weight += distanceToBest;
-    //     }
-    // }
-
-
 }
 
 void ParticleFilter::collectMeasurements() {
@@ -115,7 +100,7 @@ bool ParticleFilter::compareMeasurements() {
         }
     }
 
-    // This ensures we will have a range of 0-1 instead of a huge range of combined deviations, which is less clean and harder to deal with.
+    // This ensures we will have a range of 0-1 instead of a huge range of combined deviations
     for(Particle particle: particles) {
         particle.weight /= maxDeviation; 
     }
