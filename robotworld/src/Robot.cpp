@@ -53,9 +53,9 @@ namespace Model
 								communicating(false), 
 								particleFilter(500),
 								kalmanFilter(Matrix<double, 4, 1>(0), Matrix<double, 4, 1>(0)),
+								belType(beliefType::NONE),
 								kalmanBelief(position),
-								particleBelief(position),
-								belType(beliefType::NONE)
+								particleBelief(position)
 	{
 		std::shared_ptr< AbstractSensor > compass = std::make_shared<Compass>( *this);
 		attachSensor(compass);
@@ -534,8 +534,7 @@ namespace Model
 							currentRadarPointCloud = distancePercept->pointCloud;
 						} else if(typeid(tempAbstractPercept) == typeid(AnglePercept)) {
 							AnglePercept* anglePercept = dynamic_cast<AnglePercept*>(percept.value().get());
-							currectCompassAngle = anglePercept->angle;
-							//std::cout << "currentCompasAngle: " << currectCompassAngle << std::endl;
+							currectCompassAngle = static_cast<float>(anglePercept->angle);
 						} else if(typeid(tempAbstractPercept) == typeid(OdoPercept)) {
 							OdoPercept* odoPercept = dynamic_cast<OdoPercept*>(percept.value().get());
 							currectOdometerReading.push_back(odoPercept->point);
@@ -559,7 +558,7 @@ namespace Model
 						measurement.at(2,0) = 10;
 						measurement.at(3,0) = 10;
 						Matrix<double,2,1> result = kalmanFilter.executeKalmanFilter(measurement);
-						kalmanBelief = {result.at(0,0), result.at(1,0)};
+						kalmanBelief = {static_cast<int>(result.at(0,0)), static_cast<int>(result.at(1,0))};
 						kalmanBeliefPath.push_back(kalmanBelief);
 					}
 				} 

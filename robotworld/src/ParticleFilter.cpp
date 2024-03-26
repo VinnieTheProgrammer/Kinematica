@@ -62,17 +62,17 @@ void ParticleFilter::updateParticles() {
     }
 
     
-    // Give all particles far away ( > robotspeed) from the previous "winning" particles a debuff in weight
-    Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
-	float speed = robot->getSpeed();
+    // // Give all particles far away ( > robotspeed) from the previous "winning" particles a debuff in weight
+    // Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+	// float speed = robot->getSpeed();
 
-    // for all pixels further away then the best pixel + the robot speed, add the distance to the weight as a debuff
-    for(Particle particle : particles) {
-        double distanceToBest = std::abs(particle.position.x - previousBestParticle.position.x) + std::abs(particle.position.y - previousBestParticle.position.y);
-        if(distanceToBest >= (2 * speed)) { // 2x the speed to acount for the distance being x + y
-            particle.weight += distanceToBest;
-        }
-    }
+    // // for all pixels further away then the best pixel + the robot speed, add the distance to the weight as a debuff
+    // for(Particle particle : particles) {
+    //     double distanceToBest = std::abs(particle.position.x - previousBestParticle.position.x) + std::abs(particle.position.y - previousBestParticle.position.y);
+    //     if(distanceToBest >= (2 * speed)) { // 2x the speed to acount for the distance being x + y
+    //         particle.weight += distanceToBest;
+    //     }
+    // }
 
 
 }
@@ -91,7 +91,6 @@ bool ParticleFilter::compareMeasurements() {
     Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
     auto robotPercepts = robot->currentRadarPointCloud;
     if(robotPercepts.empty()) {
-        std::cout << "No robot data yet" << std::endl;
         return false;
     }
 
@@ -162,4 +161,8 @@ void ParticleFilter::executeParticleFilter() {
         resample();
         iterations++;
     }
+}
+
+void ParticleFilter::clearParticles() {
+    particles.clear();
 }

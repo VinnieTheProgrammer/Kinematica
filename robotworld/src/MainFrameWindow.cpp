@@ -724,6 +724,8 @@ namespace Application
 	void MainFrameWindow::OnUnpopulate( wxCommandEvent& UNUSEDPARAM(anEvent))
 	{
 		robotWorldCanvas->unpopulate();
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
+		robot->particleFilter.clearParticles();
 
 		logTextCtrl->Clear();
 	}
@@ -779,7 +781,7 @@ namespace Application
 		}
 	}
 
-	void MainFrameWindow::OnNoFilter(wxCommandEvent& anEvent) {
+	void MainFrameWindow::OnNoFilter(wxCommandEvent& UNUSEDPARAM(anEvent)) {
 		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
 		if (robot)
 		{
@@ -789,7 +791,7 @@ namespace Application
 		}
 	}
 
-	void MainFrameWindow::OnKalman(wxCommandEvent& anEvent) {
+	void MainFrameWindow::OnKalman(wxCommandEvent& UNUSEDPARAM(anEvent)) {
 		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
 		if (robot)
 		{
@@ -798,7 +800,7 @@ namespace Application
 		}
 	}
 
-	void MainFrameWindow::OnParticle(wxCommandEvent& anEvent) {
+	void MainFrameWindow::OnParticle(wxCommandEvent& UNUSEDPARAM(anEvent)) {
 		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
 		if (robot)
 		{
@@ -807,7 +809,7 @@ namespace Application
 		}
 	}
 
-	void MainFrameWindow::OnBothFilters(wxCommandEvent& anEvent) {
+	void MainFrameWindow::OnBothFilters(wxCommandEvent& UNUSEDPARAM(anEvent)) {
 		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
 		if (robot)
 		{

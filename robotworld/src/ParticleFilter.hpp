@@ -15,7 +15,7 @@ class ParticleFilter {
     public:
         ParticleFilter(const int  & particleStartNr);
         Particle getBestParticle();
-
+        void clearParticles();
         void generateInitialPos(); // initiële random verdeling van particles maken
         void drawParticles(wxDC& dc);
 

@@ -99,8 +99,10 @@ namespace View
 		drawPath( dc);
 
 		drawRobot( dc);
-		 Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
-		// robot->particleFilter.drawParticles(dc);
+		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+		if(robot->belType == Model::beliefType::PARTICLE || robot->belType == Model::beliefType::BOTH) {
+			robot->particleFilter.drawParticles(dc);
+		}
 		robot->drawBelief(dc);
 
 	}
