@@ -42,7 +42,7 @@ namespace Application
 
 		MainApplication::setCommandlineArguments( argc, argv);
 
-		Configurator::getConfigFromFile("/home/vincent/School/WoR/Kinematica/robotworld/stdev.txt");
+		Configurator::getConfigFromFile("/home/vincent/ESD/Kinematica/robotworld/stdev.txt");
 
 		MainFrameWindow* frame = nullptr;
 		if(MainApplication::isArgGiven("-worldname"))

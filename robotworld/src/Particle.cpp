@@ -4,7 +4,9 @@
 #include "MathUtils.hpp"
 #include "RobotWorld.hpp"
 #include "Lidar.hpp"
+#include <random>
 #include "Robot.hpp"
+#include <Odometer.hpp>
 
 Particle::Particle(const wxPoint & position): position(position) {
     weight = 0;
@@ -54,5 +56,13 @@ void Particle::collectMeasurements() {
                 lidarMeasurements.push_back(endpoint);
 			}
 
+			// calc update 
+			std::random_device rd{};
+			std::mt19937 gen{rd()};
+			std::normal_distribution<> noise{0,Model::Odometer::getStdDev()};
+			Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
+			double updateAngle = std::abs(Utils::MathUtils::toDegrees(Utils::Shape2DUtils::getAngle( robot->getFront())) + noise(gen));
+			float speed = robot->getSpeed() + noise(gen);
+			update = std::make_pair(updateAngle,speed);
 		}
 }

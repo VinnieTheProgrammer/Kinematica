@@ -36,10 +36,10 @@ void ParticleFilter::drawParticles(wxDC& dc) {
     if(!initialized) {
         generateInitialPos();
     }
-    // for(Particle & particle : particles) {
+    for(Particle & particle : particles) {
         dc.SetPen( wxPen(  "GREEN", 2, wxPENSTYLE_SOLID));
-        dc.DrawCircle(previousBestParticle.position.x, previousBestParticle.position.y,2);
-    // }
+        dc.DrawCircle(particle.position.x, particle.position.y,2);
+    }
 }
 
 Particle ParticleFilter::getBestParticle() {
@@ -47,10 +47,21 @@ Particle ParticleFilter::getBestParticle() {
 }
 
 void ParticleFilter::updateParticles() {
+    collectMeasurements();
     if(iterations == 0) {
         return; // To ensure the first iterations isn't updated.
     }
 
+    for(Particle particle : particles) {
+        auto angle = particle.update.first;
+        auto distance = particle.update.second;
+    
+        wxPoint endpoint{	static_cast< int >( particle.position.x + std::cos( Utils::MathUtils::toRadians(angle))*distance),
+                    static_cast< int >( particle.position.y + std::sin( Utils::MathUtils::toRadians(angle))*distance)};
+        particle.position = endpoint;
+    }
+
+    
     // Give all particles far away ( > robotspeed) from the previous "winning" particles a debuff in weight
     Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot("Robot");
 	float speed = robot->getSpeed();

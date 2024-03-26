@@ -10,8 +10,7 @@ class Particle {
     public:
         double weight;
         wxPoint position;
-        float compassMeasurement;
-        float speedMeasurement;
+        std::pair<double,double> update;
         std::vector<wxPoint> lidarMeasurements;
 
         Particle(const wxPoint & position);
